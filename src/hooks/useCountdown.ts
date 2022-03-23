@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useIntervalWhen } from "./useIntervalWhen";
 
 type CountdownOptions = {
   interval?: number;
-  onDown?: Function;
-  onEnd?: Function;
+  onDown?: (remainingTimeInMilliseconds: number) => void;
+  onEnd?: (dateWhenCountdownEnded: Date) => void;
+  startImmediate?: boolean | undefined;
 };
 
 /**
@@ -14,33 +15,40 @@ type CountdownOptions = {
  *
  * @param endTime Time to countdown
  * @param options  Countdown options
+ * @returns intervalCountRemaining Number of countdowns remaining.
  */
 function useCountdown(endTime: Date, options: CountdownOptions = {}): number {
-  const { interval = 1_000, onDown, onEnd } = options;
+  const { interval = 1_000, onDown, onEnd, startImmediate = false } = options;
   const [time, setTime] = useState<Date>(() => new Date());
-  const restTime = endTime.getTime() - time.getTime();
-  const count = restTime > 0 ? Math.ceil(restTime / interval) : 0;
+  const remainingTimeInMilliseconds = endTime.getTime() - time.getTime();
+  const countdownIntervalsRemaining =
+    remainingTimeInMilliseconds > 0
+      ? Math.ceil(remainingTimeInMilliseconds / Math.max(interval, 1))
+      : 0;
+  const isCountdownEnabled = Boolean(countdownIntervalsRemaining);
 
-  useIntervalWhen(onTick, count ? interval : undefined, true, true);
-
-  return count;
-
-  function onTick() {
+  const onTick = useCallback(() => {
     const newTime = new Date();
     if (newTime > endTime) {
       if (onEnd) {
         onEnd(newTime);
       }
+
       setTime(endTime);
 
       return;
     }
 
     if (onDown) {
-      onDown(restTime, newTime);
+      onDown(remainingTimeInMilliseconds);
     }
+
     setTime(newTime);
-  }
+  }, [endTime, onDown, onEnd, remainingTimeInMilliseconds]);
+
+  useIntervalWhen(onTick, interval, isCountdownEnabled, startImmediate);
+
+  return countdownIntervalsRemaining;
 }
 
 export { useCountdown };
