@@ -1,19 +1,20 @@
-import { useState, useEffect, ChangeEvent, useCallback, useMemo } from "react";
+import type { ChangeEvent } from "react";
+import { useState, useEffect, useCallback } from "react";
 
-type InputChangeEvent = React.ChangeEvent<HTMLInputElement>;
+type InputChangeEvent = ChangeEvent<HTMLInputElement>;
 
 type InputHandler = {
-  /**
-   * The current value of the input
-   */
-  value: any;
-
   /**
    * Function to handle onChange of an input element
    *
    * @param event The input change event
    */
-  onChange: (e: InputChangeEvent) => void;
+  onChange: (event: InputChangeEvent) => void;
+
+  /**
+   * The current value of the input
+   */
+  value: string;
 };
 
 type Options = {
@@ -22,12 +23,11 @@ type Options = {
    *
    * Validator function which can be used to prevent updates
    *
-   * @param {any} New value
-   * @param {any} Current value
+   * @param {string} New value
+   * @param {string} Current value
    * @returns {boolean} Whether an update should happen or not
-   *
-   * */
-  validate?: (newValue: any, currentValue: any) => boolean;
+   */
+  validate?: (newValue: string, currentValue: string) => boolean;
 };
 
 const defaultOptions: Options = {};
@@ -39,28 +39,29 @@ const defaultOptions: Options = {};
  * Handles an input's value and onChange props internally to
  * make text input creation process easier
  *
- * @param {any} [initialValue=""] Initial value of the input
- * @param {Options} [opts={}] Options object
+ * @param {any} [initialValue] Initial value of the input
+ * @param {Options} [opts] Options object
  * @returns {InputHandler} Input handler with value and onChange
  */
 function useInput(
-  initialValue: any = "",
+  initialValue: string = "",
   options: Options = defaultOptions
 ): InputHandler {
   const [value, setValue] = useState(initialValue);
 
   const onChange = useCallback(
-    (e: InputChangeEvent) => {
-      const newValue = e.target.value;
+    (event: InputChangeEvent) => {
+      const newValue = event.target.value;
       let shouldUpdate = true;
       if (typeof options.validate === "function") {
         shouldUpdate = options.validate(newValue, value);
       }
+
       if (shouldUpdate) {
         setValue(newValue);
       }
     },
-    [value]
+    [options, value]
   );
 
   // sync with default value
