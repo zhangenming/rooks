@@ -30,10 +30,10 @@ function useBoundingclientrectRef(): [
 
   useEffect(() => {
     update();
-  }, [node]);
+  }, [node, update]);
 
-  const ref = useCallback((node: HTMLElement | null) => {
-    setNode(node);
+  const ref = useCallback((newNode: HTMLElement | null) => {
+    setNode(newNode);
   }, []);
 
   const [mutationObserverRef] = useMutationObserverRef(update);
