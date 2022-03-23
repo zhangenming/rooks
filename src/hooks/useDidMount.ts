@@ -6,11 +6,10 @@ import { useEffect } from "react";
  *
  * @param {Function} callback Callback function to be called on mount
  */
-function useDidMount(callback: () => any): void {
+function useDidMount(callback: () => void): void {
   useEffect(() => {
-    if (typeof callback === "function") {
-      callback();
-    }
+    callback?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }
 
