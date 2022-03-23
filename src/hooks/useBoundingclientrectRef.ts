@@ -30,7 +30,7 @@ function useBoundingclientrectRef(): [
 
   useEffect(() => {
     update();
-  }, [node, update]);
+  }, [update]);
 
   const ref = useCallback((newNode: HTMLElement | null) => {
     setNode(newNode);
