@@ -1,5 +1,5 @@
 import type { MutableRefObject } from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useDidMount } from "./useDidMount";
 import { useMutationObserver } from "./useMutationObserver";
 
@@ -26,7 +26,11 @@ function useBoundingclientrect(
 
   const update = useCallback(() => {
     setValue(ref.current ? getBoundingClientRect(ref.current) : null);
-  }, []);
+    // Using ref in dependencies is both harmless and necessary.
+    // It's a way to make sure that we don't skip dep check in this function. So if we
+    // ever add a new variable in this function, eslint will prompt use to confirm whether it
+    // is a dependency or not.
+  }, [ref]);
 
   useDidMount(() => {
     update();
